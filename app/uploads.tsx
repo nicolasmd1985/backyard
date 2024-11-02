@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -11,6 +11,10 @@ export default function PhotoUploadScreen() {
   const [images, setImages] = useState([]);
   const [address, setLocalAddress] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    getLocation(); // Automatically get GPS location when the component mounts
+  }, []);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -71,22 +75,25 @@ export default function PhotoUploadScreen() {
       <Text style={styles.headerText}>Upload or Capture Your Backyard Photos</Text>
 
       {/* Photo Upload and Display */}
-      <FlatList
-        data={images}
-        renderItem={({ item }) => (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: item }} style={styles.image} />
-            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteImage(item)}>
-              <Text style={styles.deleteButtonText}>X</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-        horizontal
-        style={styles.imageList}
-        contentContainerStyle={styles.imageListContent}
-        showsHorizontalScrollIndicator={false}
-      />
+      <View style={styles.flatList}>
+        <FlatList
+          data={images}
+          renderItem={({ item }) => (
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: item }} style={styles.image} />
+              <TouchableOpacity style={styles.deleteButton} onPress={() => deleteImage(item)}>
+                <Text style={styles.deleteButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+          horizontal
+          style={styles.imageList}
+          contentContainerStyle={styles.imageListContent}
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
+
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button} onPress={pickImage}>
@@ -130,6 +137,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     padding: 20,
   },
+  flatList: {
+    marginBottom: 20,
+  },
+  imageList: {
+    flexGrow: 0,
+  },
+  imageListContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -137,12 +154,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageContainer: {
-    marginRight: 10,
     position: 'relative',
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     borderRadius: 10,
   },
   deleteButton: {

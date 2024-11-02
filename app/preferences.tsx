@@ -6,6 +6,7 @@ import { useAppContext } from './AppContext';
 export default function BackyardTransformationScreen() {
   const { setPreferences } = useAppContext();
   const [mainImage, setMainImage] = useState(require('../assets/images/foodGarden.jpg'));
+  const [description, setDescription] = useState('Create a productive garden that provides fresh food.');
   const navigation = useNavigation();
 
   const images = {
@@ -14,8 +15,15 @@ export default function BackyardTransformationScreen() {
     mixed: require('../assets/images/mixed.jpg'),
   };
 
+  const descriptions = {
+    foodGarden: 'Create a productive garden that provides fresh food.',
+    ecoFriendly: 'Design a backyard that supports the environment with native plants.',
+    mixed: 'Enjoy the benefits of both a food garden and an eco-friendly design.',
+  };
+
   const handleOptionPress = (option) => {
     setMainImage(images[option]);
+    setDescription(descriptions[option]); // Set the description based on the selected option
     setPreferences(option); // Save the selected preference to context
   };
 
@@ -24,6 +32,7 @@ export default function BackyardTransformationScreen() {
       <Text style={styles.headerText}>Backyard Transformation</Text>
 
       <Image source={mainImage} style={styles.mainImage} />
+      <Text style={styles.descriptionText}>{description}</Text>
 
       <View style={styles.optionsContainer}>
         <TouchableOpacity onPress={() => handleOptionPress('foodGarden')}>
@@ -70,6 +79,13 @@ const styles = StyleSheet.create({
     height: 250,
     borderRadius: 10,
     marginBottom: 20,
+  },
+  descriptionText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666',
+    paddingHorizontal: 10,
   },
   optionsContainer: {
     flexDirection: 'row',

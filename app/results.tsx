@@ -1,38 +1,50 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAppContext } from './AppContext';
-import { FontAwesome } from '@expo/vector-icons';
+import axios from 'axios';
+import { uploadImageToS3 } from './s3Uploader'; // Assuming this function is defined in s3Uploader.js
 
 export default function ResultsScreen() {
   const { preferences, photos, address } = useAppContext();
+  const [advice, setAdvice] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Placeholder advice based on the selected preference
-  const generateAdvice = () => {
-    switch (preferences) {
-      case 'foodGarden':
-        return {
-          image: require('../assets/images/foodGarden.jpg'),
-          text: 'Transform your backyard into a productive food garden with raised beds and herbs. This design maximizes food yield in small spaces.',
-        };
-      case 'ecoFriendly':
-        return {
-          image: require('../assets/images/ecoFriendly.jpg'),
-          text: 'Create a sustainable backyard by using native plants, rain gardens, and composting areas to promote biodiversity.',
-        };
-      case 'mixed':
-        return {
-          image: require('../assets/images/mixed.jpg'),
-          text: 'Blend productivity and sustainability with a mixed backyard. Include spaces for food production alongside eco-friendly designs.',
-        };
-      default:
-        return {
-          image: require('../assets/images/modern_backyard.jpg'),
-          text: 'Choose your preferences to get personalized advice on transforming your backyard.',
-        };
+  // Function to upload images to S3 and fetch results from Rails
+  const fetchScenario = async () => {
+    setLoading(true);
+
+    try {
+      // Step 1: Upload each photo to S3 and collect URLs
+      const uploadedPhotoUrls = await Promise.all(
+        photos.map((photo, index) => uploadImageToS3(photo, `photo_${index}.jpg`))
+      );
+
+      // Step 2: Send data to Rails API, including location, preference, and photo URLs
+      const response = await axios.post('http://192.168.1.36:3000/scenarios/generate', {
+        location: address || 'Unknown Location',
+        scenario_type: preferences,
+        photos: uploadedPhotoUrls,
+      });
+
+      // Step 3: Store Rails response in state to display recommendations
+      setAdvice({
+        image: response.data.design_image,
+        text: response.data.description,
+      });
+    } catch (error) {
+      console.error("Error fetching scenario:", error);
+      setAdvice({
+        image: require('../assets/images/modern_backyard.jpg'), // Default image
+        text: 'Unable to retrieve advice. Please try again later.',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const advice = generateAdvice();
+  useEffect(() => {
+    fetchScenario();
+  }, [preferences, address, photos]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -42,9 +54,9 @@ export default function ResultsScreen() {
       <Text style={styles.subheaderText}>Location:</Text>
       <Text style={styles.addressText}>{address || 'Address not available'}</Text>
 
-      {/* Display Preference */}
+      {/* Display Preferences */}
       <Text style={styles.subheaderText}>Selected Preference:</Text>
-      <Text style={styles.preferenceText}>{preferences}</Text>
+      <Text style={styles.preferencesText}>{preferences}</Text>
 
       {/* Display Uploaded Photos */}
       <Text style={styles.subheaderText}>Uploaded Photos:</Text>
@@ -54,16 +66,21 @@ export default function ResultsScreen() {
         ))}
       </ScrollView>
 
-      {/* Display Advice */}
-      <Text style={styles.subheaderText}>Our Recommendation:</Text>
-      <Image source={advice.image} style={styles.adviceImage} />
-      <Text style={styles.adviceText}>{advice.text}</Text>
-
-      {/* Return to Home Button */}
-      <TouchableOpacity style={styles.returnButton} onPress={() => console.log('Return to Home')}>
-        <FontAwesome name="home" size={20} color="#FFF" style={styles.icon} />
-        <Text style={styles.returnButtonText}>Return to Home</Text>
-      </TouchableOpacity>
+      {/* Display Advice or Loading Indicator */}
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        advice && (
+          <>
+            <Text style={styles.subheaderText}>Our Recommendation:</Text>
+            <Image
+              source={{ uri: advice.image }}
+              style={styles.adviceImage}
+            />
+            <Text style={styles.adviceText}>{advice.text}</Text>
+          </>
+        )
+      )}
     </ScrollView>
   );
 }
@@ -93,7 +110,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 15,
   },
-  preferenceText: {
+  preferencesText: {
     fontSize: 16,
     color: '#333',
     alignSelf: 'flex-start',
@@ -120,21 +137,5 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     marginBottom: 20,
-  },
-  returnButton: {
-    flexDirection: 'row',
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  returnButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 5,
   },
 });

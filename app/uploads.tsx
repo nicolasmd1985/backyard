@@ -3,7 +3,7 @@ import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, FlatList } 
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { useAppContext } from './AppContext';
+import { useAppContext } from './contexts/AppContext';
 import { useRouter } from 'expo-router';
 
 export default function PhotoUploadScreen() {

@@ -1,11 +1,13 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { AppProvider } from './AppContext'; // Adjust path if necessary
+import { AppProvider } from './contexts/AppContext'; // Adjust path if necessary
 
 export default function Layout() {
   return (
     <AppProvider>
-      <Stack initialRouteName="index" />
+      {/* <Stack screenOptions={{ headerShown: false }} /> */}
+      <Stack initialRouteName='index' />
     </AppProvider>
+
   );
 }

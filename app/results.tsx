@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
-import { useAppContext } from './AppContext';
+import { useAppContext } from './contexts/AppContext';
 import axios from 'axios';
-import { uploadImageToS3 } from './s3Uploader'; // Assuming this function is defined in s3Uploader.js
+import { uploadImageToS3 } from './services/s3Uploader'; // Assuming this function is defined in s3Uploader.js
 
 export default function ResultsScreen() {
   const { preferences, photos, address } = useAppContext();
@@ -30,6 +30,8 @@ export default function ResultsScreen() {
       setAdvice({
         image: response.data.design_image,
         text: response.data.description,
+        plants: response.data.plants, // Assuming this is an array of { name, description, image }
+
       });
     } catch (error) {
       console.error("Error fetching scenario:", error);
@@ -73,11 +75,32 @@ export default function ResultsScreen() {
         advice && (
           <>
             <Text style={styles.subheaderText}>Our Recommendation:</Text>
-            <Image
-              source={{ uri: advice.image }}
-              style={styles.adviceImage}
-            />
+            <Image source={{ uri: advice.image }} style={styles.adviceImage} />
             <Text style={styles.adviceText}>{advice.text}</Text>
+
+            {/* // In ResultsScreen component */}
+            {advice.plants && advice.plants.length > 0 && (
+              <View style={styles.plantContainer}>
+                <Text style={styles.subheaderText}>Recommended Plants:</Text>
+                {advice.plants.map((plant, index) => (
+                  <View key={index} style={styles.plantItem}>
+                      <Image
+                        style={styles.plantImage}
+                        source={
+                          plant.image_url && plant.image_url !== 'Image not found'
+                            ? { uri: plant.image_url } // Use the plant image URI if it exists and is valid
+                            : require('../assets/images/modern_backyard.jpg') // Use the local placeholder image otherwise
+                        }
+                      />
+                    <View style={styles.plantInfo}>
+                      <Text style={styles.plantName}>{plant.name}</Text>
+                      <Text style={styles.plantDescription}>{plant.description}</Text>
+
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
           </>
         )
       )}
@@ -88,7 +111,7 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
+    padding: 15, // Increased padding for a cleaner layout
     backgroundColor: '#FFF',
     alignItems: 'center',
   },
@@ -137,5 +160,36 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  plantContainer: {
+    marginTop: 20,
+    width: '100%',
+  },
+  plantItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start', // Align items to the top of the row
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginBottom: 10,
+  },
+  plantImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  plantInfo: {
+    flex: 1, // Allow the text container to take up the remaining space
+  },
+  plantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  plantDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
 });

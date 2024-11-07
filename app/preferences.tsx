@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useAppContext } from './AppContext';
+import { useAppContext } from './contexts/AppContext';
 
 export default function BackyardTransformationScreen() {
   const { setPreferences } = useAppContext();

@@ -20,24 +20,24 @@ export default function ResultsScreen() {
       );
 
       // Step 2: Send data to Rails API, including location, preference, and photo URLs
-      const response = await axios.post('http://192.168.1.36:3000/scenarios/generate', {
+      const response = await axios.post('http://44.198.230.97:3001/scenarios/generate', {
         location: address || 'Unknown Location',
-        scenario_type: preferences,
+        scenario_type: preferences || 'General',
         photos: uploadedPhotoUrls,
       });
 
       // Step 3: Store Rails response in state to display recommendations
       setAdvice({
-        image: response.data.design_image,
-        text: response.data.description,
-        plants: response.data.plants, // Assuming this is an array of { name, description, image }
-
+        image: response.data.design_image || require('../assets/images/modern_backyard.jpg'),
+        text: response.data.description || 'No description available.',
+        plants: response.data.plants || [],
       });
     } catch (error) {
-      console.error("Error fetching scenario:", error);
+      console.error("Error fetching scenario:", error.message);
       setAdvice({
-        image: require('../assets/images/modern_backyard.jpg'), // Default image
+        image: 'Image not found',
         text: 'Unable to retrieve advice. Please try again later.',
+        plants: [],
       });
     } finally {
       setLoading(false);
@@ -58,14 +58,27 @@ export default function ResultsScreen() {
 
       {/* Display Preferences */}
       <Text style={styles.subheaderText}>Selected Preference:</Text>
-      <Text style={styles.preferencesText}>{preferences}</Text>
+      <Text style={styles.preferencesText}>{preferences || 'No preference selected'}</Text>
 
       {/* Display Uploaded Photos */}
       <Text style={styles.subheaderText}>Uploaded Photos:</Text>
       <ScrollView horizontal style={styles.photoContainer}>
-        {photos.map((photoUri, index) => (
-          <Image key={index} source={{ uri: photoUri }} style={styles.photo} />
-        ))}
+        {photos && photos.length > 0 ? (
+          photos.map((photoUri, index) => (
+            <Image
+              key={index}
+              source={
+                // plant.image_url && plant.image_url !== 'Image not found'
+                photoUri !== 'Image not found'
+                  ? { uri: photoUri }
+                  : require('../assets/images/modern_backyard.jpg') // Fallback
+              }
+              style={styles.photo}
+            />
+          ))
+        ) : (
+          <Text>No photos uploaded</Text>
+        )}
       </ScrollView>
 
       {/* Display Advice or Loading Indicator */}
@@ -75,27 +88,33 @@ export default function ResultsScreen() {
         advice && (
           <>
             <Text style={styles.subheaderText}>Our Recommendation:</Text>
-            <Image source={{ uri: advice.image }} style={styles.adviceImage} />
+            <Image
+              source={
+                advice.image !== 'Image not found'
+                  ? { uri: advice.image }
+                  : require('../assets/images/modern_backyard.jpg')
+              }
+              style={styles.adviceImage}
+            />
             <Text style={styles.adviceText}>{advice.text}</Text>
 
-            {/* // In ResultsScreen component */}
+            {/* Recommended Plants */}
             {advice.plants && advice.plants.length > 0 && (
               <View style={styles.plantContainer}>
                 <Text style={styles.subheaderText}>Recommended Plants:</Text>
                 {advice.plants.map((plant, index) => (
                   <View key={index} style={styles.plantItem}>
-                      <Image
-                        style={styles.plantImage}
-                        source={
-                          plant.image_url && plant.image_url !== 'Image not found'
-                            ? { uri: plant.image_url } // Use the plant image URI if it exists and is valid
-                            : require('../assets/images/modern_backyard.jpg') // Use the local placeholder image otherwise
-                        }
-                      />
+                    <Image
+                      style={styles.plantImage}
+                      source={
+                        plant.image_url && plant.image_url !== 'Image not found'
+                          ? { uri: plant.image_url }
+                          : require('../assets/images/modern_backyard.jpg') // Fallback
+                      }
+                    />
                     <View style={styles.plantInfo}>
                       <Text style={styles.plantName}>{plant.name}</Text>
                       <Text style={styles.plantDescription}>{plant.description}</Text>
-
                     </View>
                   </View>
                 ))}
@@ -111,7 +130,7 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 15, // Increased padding for a cleaner layout
+    padding: 15,
     backgroundColor: '#FFF',
     alignItems: 'center',
   },
@@ -167,7 +186,7 @@ const styles = StyleSheet.create({
   },
   plantItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start', // Align items to the top of the row
+    alignItems: 'flex-start',
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
@@ -180,7 +199,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   plantInfo: {
-    flex: 1, // Allow the text container to take up the remaining space
+    flex: 1,
   },
   plantName: {
     fontSize: 16,

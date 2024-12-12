@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
-import { useAppContext } from './contexts/AppContext';
+import { useAppContext } from '../src/contexts/AppContext';
 import axios from 'axios';
-import { uploadImageToS3 } from './services/s3Uploader'; // Assuming this function is defined in s3Uploader.js
+import { uploadImageToS3 } from '../src/services/s3Uploader'; // Assuming this function is defined in s3Uploader.js
 
 export default function ResultsScreen() {
   const { preferences, photos, address } = useAppContext();
@@ -20,7 +20,7 @@ export default function ResultsScreen() {
       );
 
       // Step 2: Send data to Rails API, including location, preference, and photo URLs
-      const response = await axios.post('http://44.198.230.97:3001/scenarios/generate', {
+      const response = await axios.post('https://ordenapp.co/app2/scenarios/generate', {
         location: address || 'Unknown Location',
         scenario_type: preferences || 'General',
         photos: uploadedPhotoUrls,

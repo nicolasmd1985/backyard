@@ -3,7 +3,7 @@ import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, FlatList } 
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { useAppContext } from './contexts/AppContext';
+import { useAppContext } from '../src/contexts/AppContext';
 import { useRouter } from 'expo-router';
 
 export default function PhotoUploadScreen() {
@@ -14,8 +14,20 @@ export default function PhotoUploadScreen() {
 
   useEffect(() => {
     getLocation(); // Automatically get GPS location when the component mounts
+    (async () => {
+      const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+      const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+      if (cameraPermission.status !== 'granted') {
+        alert('Camera permission is required to take photos');
+      }
+      if (libraryPermission.status !== 'granted') {
+        alert('Media library permission is required to upload photos');
+      }
+    })();
   }, []);
 
+  
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -31,6 +43,7 @@ export default function PhotoUploadScreen() {
   };
 
   const takePhoto = async () => {
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
     let result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],

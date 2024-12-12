@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ImageBackground, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from './types'; // Adjust path if necessary
+import { RootStackParamList } from '../src/types'; // Adjust path if necessary
 
 
 const WelcomeScreen: React.FC = () => {

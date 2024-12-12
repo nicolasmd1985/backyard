@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { AppProvider } from './contexts/AppContext'; // Adjust path if necessary
+import { AppProvider } from '../src/contexts/AppContext'; // Adjust path if necessary
 
 export default function Layout() {
   return (

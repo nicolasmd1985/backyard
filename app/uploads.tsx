@@ -43,9 +43,9 @@ export default function PhotoUploadScreen() {
   };
 
   const takePhoto = async () => {
-    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
     let result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
+      allowsEditing: false,
+      // allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });

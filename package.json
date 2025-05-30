@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --dev-client",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -15,11 +15,12 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.525.0",
+    "@aws-sdk/s3-request-presigner": "^3.525.0",
     "@expo/vector-icons": "^14.0.3",
     "@react-navigation/native": "^6.1.18",
-    "aws-sdk": "^2.1691.0",
     "axios": "^1.7.7",
-    "expo": "^52.0.0",
+    "expo": "^52.0.18",
     "expo-constants": "~17.0.3",
     "expo-dev-client": "~5.0.5",
     "expo-font": "~13.0.1",
@@ -33,7 +34,7 @@
     "expo-web-browser": "~14.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-native": "0.76.3",
+    "react-native": "0.76.5",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "4.12.0",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@babel/plugin-transform-class-static-block": "^7.27.1",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.0.7",

@@ -14,6 +14,102 @@ import { useRouter } from 'expo-router';
 import { generateScenarioApi } from '../services/api';
 import { PlantRecommendation, ScenarioResponse } from './types';
 
+const PlantCardItem = ({ plant }: { plant: PlantRecommendation }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const getCategoryColor = (cat?: string) => {
+    if (!cat) return '#059669';
+    const c = cat.toLowerCase();
+    if (c.includes('edible') || c.includes('herb') || c.includes('fruit')) return '#16A34A';
+    if (c.includes('pollinator') || c.includes('native')) return '#D97706';
+    if (c.includes('grass')) return '#0D9488';
+    return '#059669';
+  };
+
+  const getCategoryIcon = (cat?: string): any => {
+    if (!cat) return 'leaf';
+    const c = cat.toLowerCase();
+    if (c.includes('fruit')) return 'nutrition';
+    if (c.includes('herb') || c.includes('edible')) return 'leaf';
+    if (c.includes('pollinator')) return 'flower';
+    return 'leaf';
+  };
+
+  const hasImage = plant.image_url && plant.image_url.trim().length > 0 && !imageError;
+
+  return (
+    <View style={styles.plantCard}>
+      {hasImage ? (
+        <Image
+          source={{ uri: plant.image_url }}
+          style={styles.plantThumb}
+          resizeMode="cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <View
+          style={[
+            styles.plantThumb,
+            {
+              backgroundColor: `${getCategoryColor(plant.category)}15`,
+              borderWidth: 1,
+              borderColor: `${getCategoryColor(plant.category)}35`,
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+          ]}
+        >
+          <Ionicons name={getCategoryIcon(plant.category)} size={28} color={getCategoryColor(plant.category)} />
+          <Text
+            style={{
+              fontSize: 10,
+              fontWeight: '700',
+              color: getCategoryColor(plant.category),
+              marginTop: 4,
+              textAlign: 'center',
+            }}
+          >
+            {plant.category || 'Plant'}
+          </Text>
+        </View>
+      )}
+
+      <View style={styles.plantDetails}>
+        <View style={styles.plantNameRow}>
+          <Text style={styles.plantCommonName}>{plant.name}</Text>
+          {plant.category && (
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>{plant.category}</Text>
+            </View>
+          )}
+        </View>
+
+        {plant.scientific_name ? (
+          <Text style={styles.plantScientificName}>{plant.scientific_name}</Text>
+        ) : null}
+
+        {/* Traits Badges */}
+        <View style={styles.traitsRow}>
+          {plant.sun_requirement && (
+            <View style={styles.traitChip}>
+              <Ionicons name="sunny-outline" size={12} color="#D97706" />
+              <Text style={styles.traitText}>{plant.sun_requirement}</Text>
+            </View>
+          )}
+          {plant.water_requirement && (
+            <View style={styles.traitChip}>
+              <Ionicons name="water-outline" size={12} color="#0284C7" />
+              <Text style={styles.traitText}>{plant.water_requirement} Water</Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={styles.plantDescription}>{plant.description}</Text>
+      </View>
+    </View>
+  );
+};
+
 export default function ResultsScreen() {
   const { preferences, photos, address, resetApp } = useAppContext();
   const [loading, setLoading] = useState<boolean>(true);
@@ -326,48 +422,7 @@ function getResolvedSource(img: any, fallbackUrl: string) {
         {/* Plant Cards */}
         <View style={styles.plantCardsGrid}>
           {filteredPlants.map((plant: PlantRecommendation, index: number) => (
-            <View key={index} style={styles.plantCard}>
-              {plant.image_url ? (
-                <Image source={{ uri: plant.image_url }} style={styles.plantThumb} resizeMode="cover" />
-              ) : (
-                <View style={[styles.plantThumb, { backgroundColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' }]}>
-                  <Ionicons name="leaf" size={28} color="#94A3B8" />
-                </View>
-              )}
-
-              <View style={styles.plantDetails}>
-                <View style={styles.plantNameRow}>
-                  <Text style={styles.plantCommonName}>{plant.name}</Text>
-                  {plant.category && (
-                    <View style={styles.categoryBadge}>
-                      <Text style={styles.categoryBadgeText}>{plant.category}</Text>
-                    </View>
-                  )}
-                </View>
-
-                {plant.scientific_name ? (
-                  <Text style={styles.plantScientificName}>{plant.scientific_name}</Text>
-                ) : null}
-
-                {/* Traits Badges */}
-                <View style={styles.traitsRow}>
-                  {plant.sun_requirement && (
-                    <View style={styles.traitChip}>
-                      <Ionicons name="sunny-outline" size={12} color="#D97706" />
-                      <Text style={styles.traitText}>{plant.sun_requirement}</Text>
-                    </View>
-                  )}
-                  {plant.water_requirement && (
-                    <View style={styles.traitChip}>
-                      <Ionicons name="water-outline" size={12} color="#0284C7" />
-                      <Text style={styles.traitText}>{plant.water_requirement} Water</Text>
-                    </View>
-                  )}
-                </View>
-
-                <Text style={styles.plantDescription}>{plant.description}</Text>
-              </View>
-            </View>
+            <PlantCardItem key={index} plant={plant} />
           ))}
         </View>
       </View>
